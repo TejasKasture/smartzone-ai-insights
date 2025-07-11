@@ -59,16 +59,22 @@ const Auth = () => {
     try {
       const redirectUrl = `${window.location.origin}/`;
       
+      const userData: any = {
+        full_name: fullName,
+        role: role
+      };
+
+      // Only add department for workers
+      if (role === 'worker' && department) {
+        userData.department = department;
+      }
+      
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
           emailRedirectTo: redirectUrl,
-          data: {
-            full_name: fullName,
-            role: role,
-            department: department
-          }
+          data: userData
         }
       });
 
@@ -241,16 +247,18 @@ const Auth = () => {
                       </SelectContent>
                     </Select>
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="department">Department</Label>
-                    <Input
-                      id="department"
-                      type="text"
-                      placeholder="e.g., Electronics, Grocery, Fashion"
-                      value={department}
-                      onChange={(e) => setDepartment(e.target.value)}
-                    />
-                  </div>
+                  {role === 'worker' && (
+                    <div className="space-y-2">
+                      <Label htmlFor="department">Department</Label>
+                      <Input
+                        id="department"
+                        type="text"
+                        placeholder="e.g., Electronics, Grocery, Fashion"
+                        value={department}
+                        onChange={(e) => setDepartment(e.target.value)}
+                      />
+                    </div>
+                  )}
                   <Button 
                     type="submit" 
                     className="w-full bg-[#0071ce] hover:bg-[#004c91]" 
