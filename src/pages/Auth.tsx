@@ -15,7 +15,7 @@ const Auth = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
-  const [role, setRole] = useState<'admin' | 'worker'>('worker');
+  const [role, setRole] = useState<'manager' | 'worker'>('worker');
   const [department, setDepartment] = useState('');
   const [loading, setLoading] = useState(false);
   const [user, setUser] = useState<User | null>(null);
@@ -129,6 +129,22 @@ const Auth = () => {
     }
   };
 
+  const handleTestManagerLogin = async () => {
+    setEmail('manager@gmail.com');
+    setPassword('test123');
+    setTimeout(() => {
+      document.getElementById('signin-form')?.requestSubmit();
+    }, 100);
+  };
+
+  const handleTestWorkerLogin = async () => {
+    setEmail('worker@gmail.com');
+    setPassword('test123');
+    setTimeout(() => {
+      document.getElementById('signin-form')?.requestSubmit();
+    }, 100);
+  };
+
   if (user) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center">
@@ -166,7 +182,7 @@ const Auth = () => {
               </TabsList>
 
               <TabsContent value="signin" className="space-y-4">
-                <form onSubmit={handleSignIn} className="space-y-4">
+                <form id="signin-form" onSubmit={handleSignIn} className="space-y-4">
                   <div className="space-y-2">
                     <Label htmlFor="signin-email">Email</Label>
                     <Input
@@ -197,6 +213,29 @@ const Auth = () => {
                     {loading ? 'Signing In...' : 'Sign In'}
                   </Button>
                 </form>
+
+                {/* Test User Buttons */}
+                <div className="pt-4 border-t">
+                  <p className="text-sm text-gray-600 mb-3 text-center">Quick Test Login:</p>
+                  <div className="space-y-2">
+                    <Button
+                      onClick={handleTestManagerLogin}
+                      variant="outline"
+                      className="w-full text-sm"
+                      disabled={loading}
+                    >
+                      Login as Manager (manager@gmail.com)
+                    </Button>
+                    <Button
+                      onClick={handleTestWorkerLogin}
+                      variant="outline"
+                      className="w-full text-sm"
+                      disabled={loading}
+                    >
+                      Login as Worker (worker@gmail.com)
+                    </Button>
+                  </div>
+                </div>
               </TabsContent>
 
               <TabsContent value="signup" className="space-y-4">
@@ -237,13 +276,13 @@ const Auth = () => {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="role">Role</Label>
-                    <Select value={role} onValueChange={(value: 'admin' | 'worker') => setRole(value)}>
+                    <Select value={role} onValueChange={(value: 'manager' | 'worker') => setRole(value)}>
                       <SelectTrigger>
                         <SelectValue placeholder="Select your role" />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="worker">Worker</SelectItem>
-                        <SelectItem value="admin">Admin/Manager</SelectItem>
+                        <SelectItem value="manager">Manager</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -271,6 +310,16 @@ const Auth = () => {
             </Tabs>
           </CardContent>
         </Card>
+
+        {/* Instructions */}
+        <div className="mt-6 p-4 bg-white/80 rounded-lg text-sm text-gray-600">
+          <h3 className="font-semibold mb-2">Test Accounts:</h3>
+          <ul className="space-y-1">
+            <li>• <strong>Manager:</strong> manager@gmail.com (password: test123)</li>
+            <li>• <strong>Worker:</strong> worker@gmail.com (password: test123)</li>
+          </ul>
+          <p className="mt-2 text-xs">Use the quick login buttons above or create your own account.</p>
+        </div>
       </div>
     </div>
   );

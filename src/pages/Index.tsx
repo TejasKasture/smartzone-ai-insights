@@ -7,7 +7,7 @@ import { LogOut, User } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 
 const Index = () => {
-  const { profile, signOut, isAdmin } = useAuth();
+  const { profile, signOut, isManager } = useAuth();
 
   const handleSignOut = async () => {
     await signOut();
@@ -36,7 +36,7 @@ const Index = () => {
             <div className="text-right">
               <p className="font-semibold">{profile?.full_name || 'User'}</p>
               <p className="text-sm text-blue-200">
-                {isAdmin ? 'Admin/Manager' : 'Worker'} 
+                {isManager ? 'Manager' : 'Worker'} 
                 {profile?.department && ` • ${profile.department}`}
               </p>
             </div>

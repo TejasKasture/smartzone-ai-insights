@@ -244,7 +244,7 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "fk_profiles_store"
+            foreignKeyName: "profiles_store_id_fkey"
             columns: ["store_id"]
             isOneToOne: false
             referencedRelation: "stores"
@@ -400,7 +400,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      user_role: "admin" | "worker"
+      user_role: "manager" | "worker"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -528,7 +528,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      user_role: ["admin", "worker"],
+      user_role: ["manager", "worker"],
     },
   },
 } as const
