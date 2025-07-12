@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -10,6 +10,10 @@ interface ProtectedRouteProps {
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, managerOnly = false }) => {
   const { user, profile, loading } = useAuth();
+  const location = useLocation();
+
+  // Check if we're coming from a direct access bypass
+  const isDirectAccess = location.state?.directAccess;
 
   if (loading) {
     return (
@@ -22,11 +26,13 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, managerOnly =
     );
   }
 
-  if (!user) {
+  // Allow direct access for demo purposes
+  if (!user && !isDirectAccess) {
     return <Navigate to="/auth" replace />;
   }
 
-  if (managerOnly && profile?.role !== 'manager') {
+  // If we have a user but it's manager-only and they're not a manager
+  if (user && managerOnly && profile?.role !== 'manager') {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center">
         <div className="text-center">

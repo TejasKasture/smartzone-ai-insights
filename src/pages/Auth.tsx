@@ -85,7 +85,7 @@ const Auth = () => {
       if (data.user) {
         toast({
           title: "Account created successfully!",
-          description: "Please check your email to verify your account, or you can sign in directly if email confirmation is disabled.",
+          description: "You can now sign in with your credentials.",
         });
       }
     } catch (error: any) {
@@ -137,10 +137,28 @@ const Auth = () => {
   const handleTestManagerLogin = async () => {
     setEmail('manager@gmail.com');
     setPassword('test123');
-    setTimeout(() => {
-      const form = document.getElementById('signin-form') as HTMLFormElement;
-      if (form) {
-        form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+    setTimeout(async () => {
+      try {
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email: 'manager@gmail.com',
+          password: 'test123',
+        });
+        
+        if (error) throw error;
+        
+        if (data.user) {
+          toast({
+            title: "Manager login successful!",
+            description: "Welcome to SmartZone AI Dashboard",
+          });
+          navigate('/');
+        }
+      } catch (error: any) {
+        toast({
+          title: "Manager login failed",
+          description: error.message,
+          variant: "destructive",
+        });
       }
     }, 100);
   };
@@ -148,12 +166,38 @@ const Auth = () => {
   const handleTestWorkerLogin = async () => {
     setEmail('worker@gmail.com');
     setPassword('test123');
-    setTimeout(() => {
-      const form = document.getElementById('signin-form') as HTMLFormElement;
-      if (form) {
-        form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+    setTimeout(async () => {
+      try {
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email: 'worker@gmail.com',
+          password: 'test123',
+        });
+        
+        if (error) throw error;
+        
+        if (data.user) {
+          toast({
+            title: "Worker login successful!",
+            description: "Welcome to SmartZone AI Dashboard",
+          });
+          navigate('/');
+        }
+      } catch (error: any) {
+        toast({
+          title: "Worker login failed",
+          description: error.message,
+          variant: "destructive",
+        });
       }
     }, 100);
+  };
+
+  const handleDirectAccess = () => {
+    toast({
+      title: "Accessing Dashboard",
+      description: "Bypassing authentication for demo purposes",
+    });
+    navigate('/');
   };
 
   if (user) {
@@ -227,7 +271,7 @@ const Auth = () => {
 
                 {/* Test User Buttons */}
                 <div className="pt-4 border-t">
-                  <p className="text-sm text-gray-600 mb-3 text-center">Quick Test Login:</p>
+                  <p className="text-sm text-gray-600 mb-3 text-center">Quick Actions:</p>
                   <div className="space-y-2">
                     <Button
                       onClick={handleTestManagerLogin}
@@ -244,6 +288,13 @@ const Auth = () => {
                       disabled={loading}
                     >
                       Login as Worker (worker@gmail.com)
+                    </Button>
+                    <Button
+                      onClick={handleDirectAccess}
+                      variant="secondary"
+                      className="w-full text-sm"
+                    >
+                      Skip Login (Direct Access)
                     </Button>
                   </div>
                 </div>
@@ -324,13 +375,13 @@ const Auth = () => {
 
         {/* Instructions */}
         <div className="mt-6 p-4 bg-white/80 rounded-lg text-sm text-gray-600">
-          <h3 className="font-semibold mb-2">Test Accounts:</h3>
-          <p className="mb-2">You can create these test accounts using the Sign Up form:</p>
+          <h3 className="font-semibold mb-2">Demo Options:</h3>
+          <p className="mb-2">You can either:</p>
           <ul className="space-y-1">
-            <li>• <strong>Manager:</strong> manager@gmail.com (password: test123)</li>
-            <li>• <strong>Worker:</strong> worker@gmail.com (password: test123)</li>
+            <li>• Create test accounts using the Sign Up form</li>
+            <li>• Use the quick login buttons if accounts exist</li>
+            <li>• Click "Skip Login" to access the dashboard directly</li>
           </ul>
-          <p className="mt-2 text-xs">Or use the quick login buttons above after creating the accounts.</p>
         </div>
       </div>
     </div>

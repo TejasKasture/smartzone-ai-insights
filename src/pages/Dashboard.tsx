@@ -15,6 +15,11 @@ import { BarChart3, Store, Package, Camera, TrendingUp, Calendar, MapPin, Activi
 const Dashboard = () => {
   const { profile, isManager } = useAuth();
   const [activeTab, setActiveTab] = useState('overview');
+  const [selectedZone, setSelectedZone] = useState<string | null>(null);
+
+  const handleZoneSelect = (zoneId: string | null) => {
+    setSelectedZone(zoneId);
+  };
 
   const managerTabs = [
     { id: 'overview', label: 'Overview', icon: BarChart3 },
@@ -165,11 +170,11 @@ const Dashboard = () => {
         )}
 
         <TabsContent value="heatmap">
-          <StoreHeatMap />
+          <StoreHeatMap onZoneSelect={handleZoneSelect} selectedZone={selectedZone} />
         </TabsContent>
         
         <TabsContent value="zones">
-          <ZoneAnalytics />
+          <ZoneAnalytics selectedZone={selectedZone} />
         </TabsContent>
         
         <TabsContent value="sales">
