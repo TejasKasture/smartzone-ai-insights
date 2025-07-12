@@ -69,6 +69,8 @@ const Auth = () => {
         userData.department = department;
       }
       
+      console.log('Signing up with data:', { email, userData });
+      
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -83,7 +85,7 @@ const Auth = () => {
       if (data.user) {
         toast({
           title: "Account created successfully!",
-          description: "Please check your email to verify your account.",
+          description: "Please check your email to verify your account, or you can sign in directly if email confirmation is disabled.",
         });
       }
     } catch (error: any) {
@@ -103,6 +105,8 @@ const Auth = () => {
     setLoading(true);
 
     try {
+      console.log('Attempting to sign in with:', email);
+      
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -111,6 +115,7 @@ const Auth = () => {
       if (error) throw error;
 
       if (data.user) {
+        console.log('Sign in successful:', data.user);
         toast({
           title: "Signed in successfully!",
           description: "Welcome to SmartZone AI Dashboard",
@@ -133,7 +138,10 @@ const Auth = () => {
     setEmail('manager@gmail.com');
     setPassword('test123');
     setTimeout(() => {
-      document.getElementById('signin-form')?.requestSubmit();
+      const form = document.getElementById('signin-form') as HTMLFormElement;
+      if (form) {
+        form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+      }
     }, 100);
   };
 
@@ -141,7 +149,10 @@ const Auth = () => {
     setEmail('worker@gmail.com');
     setPassword('test123');
     setTimeout(() => {
-      document.getElementById('signin-form')?.requestSubmit();
+      const form = document.getElementById('signin-form') as HTMLFormElement;
+      if (form) {
+        form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+      }
     }, 100);
   };
 
@@ -314,11 +325,12 @@ const Auth = () => {
         {/* Instructions */}
         <div className="mt-6 p-4 bg-white/80 rounded-lg text-sm text-gray-600">
           <h3 className="font-semibold mb-2">Test Accounts:</h3>
+          <p className="mb-2">You can create these test accounts using the Sign Up form:</p>
           <ul className="space-y-1">
             <li>• <strong>Manager:</strong> manager@gmail.com (password: test123)</li>
             <li>• <strong>Worker:</strong> worker@gmail.com (password: test123)</li>
           </ul>
-          <p className="mt-2 text-xs">Use the quick login buttons above or create your own account.</p>
+          <p className="mt-2 text-xs">Or use the quick login buttons above after creating the accounts.</p>
         </div>
       </div>
     </div>

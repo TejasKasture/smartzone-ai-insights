@@ -5,10 +5,10 @@ import { Navigate } from 'react-router-dom';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
-  adminOnly?: boolean;
+  managerOnly?: boolean;
 }
 
-const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, adminOnly = false }) => {
+const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, managerOnly = false }) => {
   const { user, profile, loading } = useAuth();
 
   if (loading) {
@@ -26,12 +26,12 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, adminOnly = f
     return <Navigate to="/auth" replace />;
   }
 
-  if (adminOnly && profile?.role !== 'admin') {
+  if (managerOnly && profile?.role !== 'manager') {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center">
         <div className="text-center">
           <h2 className="text-2xl font-bold text-gray-800 mb-4">Access Denied</h2>
-          <p className="text-gray-600">You need admin privileges to access this page.</p>
+          <p className="text-gray-600">You need manager privileges to access this page.</p>
         </div>
       </div>
     );
