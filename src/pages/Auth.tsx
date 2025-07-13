@@ -38,12 +38,21 @@ const Auth = () => {
       localStorage.setItem('demo_email', email);
       localStorage.setItem('demo_department', user.role === 'worker' ? 'Electronics' : '');
 
+      console.log('Login successful, localStorage set:', {
+        demo_access: localStorage.getItem('demo_access'),
+        demo_role: localStorage.getItem('demo_role'),
+        demo_name: localStorage.getItem('demo_name')
+      });
+
       toast({
         title: "Login Successful",
         description: `Welcome ${user.name}! Logged in as ${user.role}`,
       });
 
-      navigate('/');
+      // Add a small delay to ensure localStorage is set before navigation
+      setTimeout(() => {
+        navigate('/');
+      }, 100);
     } catch (error: any) {
       toast({
         title: "Login Failed",
@@ -60,19 +69,28 @@ const Auth = () => {
     setEmail(userEmail);
     setPassword(user.password);
     
-    // Auto login
+    // Set login data in localStorage
     localStorage.setItem('demo_access', 'true');
     localStorage.setItem('demo_role', user.role);
     localStorage.setItem('demo_name', user.name);
     localStorage.setItem('demo_email', userEmail);
     localStorage.setItem('demo_department', user.role === 'worker' ? 'Electronics' : '');
 
+    console.log('Quick login successful, localStorage set:', {
+      demo_access: localStorage.getItem('demo_access'),
+      demo_role: localStorage.getItem('demo_role'),
+      demo_name: localStorage.getItem('demo_name')
+    });
+
     toast({
       title: "Quick Login",
       description: `Logged in as ${user.name} (${user.role})`,
     });
 
-    navigate('/');
+    // Add a small delay to ensure localStorage is set before navigation
+    setTimeout(() => {
+      navigate('/');
+    }, 100);
   };
 
   return (

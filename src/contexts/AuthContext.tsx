@@ -77,15 +77,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
   };
 
-  useEffect(() => {
-    // Check for demo access first
+  const checkDemoAccess = () => {
     const demoAccess = localStorage.getItem('demo_access') === 'true';
-    
     if (demoAccess) {
       const demoProfile = createDemoProfile();
       console.log('Setting demo profile:', demoProfile);
       setProfile(demoProfile);
       setLoading(false);
+      return true;
+    }
+    return false;
+  };
+
+  useEffect(() => {
+    // Check for demo access first
+    if (checkDemoAccess()) {
       return;
     }
 
@@ -125,6 +131,35 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     return () => subscription.unsubscribe();
   }, []);
+
+  // Listen for localStorage changes to update demo profile
+  useEffect(() => {
+    const handleStorageChange = () => {
+      console.log('Storage changed, checking demo access');
+      checkDemoAccess();
+    };
+
+    // Listen for storage events
+    window.addEventListener('storage', handleStorageChange);
+
+    // Also check periodically for localStorage changes within the same tab
+    const interval = setInterval(() => {
+      const demoAccess = localStorage.getItem('demo_access') === 'true';
+      if (demoAccess) {
+        const currentRole = profile?.role;
+        const newRole = localStorage.getItem('demo_role');
+        if (currentRole !== newRole) {
+          console.log('Demo role changed from', currentRole, 'to', newRole);
+          checkDemoAccess();
+        }
+      }
+    }, 500);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      clearInterval(interval);
+    };
+  }, [profile?.role]);
 
   const signOut = async () => {
     try {
