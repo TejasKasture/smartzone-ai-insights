@@ -5,7 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import StoreManagement from '@/components/StoreManagement';
 import ProductManagement from '@/components/ProductManagement';
-import StoreHeatMap from '@/components/StoreHeatMap';
+import StoreLayout from '@/components/StoreLayout';
 import ZoneAnalytics from '@/components/ZoneAnalytics';
 import CameraMapping from '@/components/CameraMapping';
 import SalesAnalytics from '@/components/SalesAnalytics';
@@ -15,18 +15,18 @@ import { BarChart3, Store, Package, Camera, TrendingUp, Calendar, MapPin, Activi
 const Dashboard = () => {
   const { profile, isManager } = useAuth();
   const [activeTab, setActiveTab] = useState('overview');
-  const [selectedZone, setSelectedZone] = useState<string | null>(null);
+  const [selectedSection, setSelectedSection] = useState<string | null>(null);
 
-  const handleZoneSelect = (zoneId: string | null) => {
-    setSelectedZone(zoneId);
+  const handleSectionSelect = (sectionId: string | null) => {
+    setSelectedSection(sectionId);
   };
 
   const managerTabs = [
     { id: 'overview', label: 'Overview', icon: BarChart3 },
     { id: 'stores', label: 'Stores', icon: Store },
     { id: 'products', label: 'Products', icon: Package },
-    { id: 'heatmap', label: 'Store Map', icon: MapPin },
-    { id: 'zones', label: 'Zone Analytics', icon: Activity },
+    { id: 'layout', label: 'Store Layout', icon: MapPin },
+    { id: 'zones', label: 'Section Analytics', icon: Activity },
     { id: 'cameras', label: 'Cameras', icon: Camera },
     { id: 'sales', label: 'Sales Analytics', icon: TrendingUp },
     { id: 'trends', label: 'Seasonal Trends', icon: Calendar },
@@ -34,8 +34,8 @@ const Dashboard = () => {
 
   const workerTabs = [
     { id: 'overview', label: 'Overview', icon: BarChart3 },
-    { id: 'heatmap', label: 'Store Map', icon: MapPin },
-    { id: 'zones', label: 'Zone Analytics', icon: Activity },
+    { id: 'layout', label: 'Store Layout', icon: MapPin },
+    { id: 'zones', label: 'Section Analytics', icon: Activity },
     { id: 'sales', label: 'Sales Analytics', icon: TrendingUp },
   ];
 
@@ -85,12 +85,12 @@ const Dashboard = () => {
             
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Active Zones</CardTitle>
+                <CardTitle className="text-sm font-medium">Available Sections</CardTitle>
                 <Activity className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">12</div>
-                <p className="text-xs text-muted-foreground">4 high-traffic zones</p>
+                <p className="text-xs text-muted-foreground">8 high-traffic sections</p>
               </CardContent>
             </Card>
             
@@ -121,7 +121,7 @@ const Dashboard = () => {
             <CardHeader>
               <CardTitle>Welcome to SmartZone AI</CardTitle>
               <CardDescription>
-                Your intelligent product placement and zone optimization system
+                Your intelligent product placement and section optimization system
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -129,17 +129,17 @@ const Dashboard = () => {
                 <div>
                   <h3 className="font-semibold mb-2">Recent Activity</h3>
                   <ul className="space-y-2 text-sm text-gray-600">
-                    <li>• Zone A performance increased by 15%</li>
+                    <li>• Kitchen section performance increased by 15%</li>
                     <li>• New product placement recommendations available</li>
                     <li>• Weekly sales report generated</li>
-                    <li>• Camera maintenance scheduled for Zone C</li>
+                    <li>• Camera maintenance scheduled for Blankets section</li>
                   </ul>
                 </div>
                 <div>
                   <h3 className="font-semibold mb-2">Quick Actions</h3>
                   <ul className="space-y-2 text-sm text-gray-600">
                     <li>• View today's sales performance</li>
-                    <li>• Check zone optimization suggestions</li>
+                    <li>• Check section optimization suggestions</li>
                     <li>• Review camera system status</li>
                     <li>• Generate custom analytics report</li>
                   </ul>
@@ -169,12 +169,12 @@ const Dashboard = () => {
           </>
         )}
 
-        <TabsContent value="heatmap">
-          <StoreHeatMap onZoneSelect={handleZoneSelect} selectedZone={selectedZone} />
+        <TabsContent value="layout">
+          <StoreLayout onSectionSelect={handleSectionSelect} selectedSection={selectedSection} />
         </TabsContent>
         
         <TabsContent value="zones">
-          <ZoneAnalytics selectedZone={selectedZone} />
+          <ZoneAnalytics selectedZone={selectedSection} />
         </TabsContent>
         
         <TabsContent value="sales">
