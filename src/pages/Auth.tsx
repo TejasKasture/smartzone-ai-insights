@@ -1,47 +1,77 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 
 const Auth = () => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const handleManagerAccess = () => {
-    toast({
-      title: "Manager Access",
-      description: "Accessing dashboard as Manager",
-    });
-    localStorage.setItem('demo_access', 'true');
-    localStorage.setItem('demo_role', 'manager');
-    localStorage.setItem('demo_name', 'John Manager');
-    localStorage.setItem('demo_department', '');
-    navigate('/');
+  // Hardcoded users
+  const users = {
+    'tejas@manager.com': { password: 'manager123', role: 'manager', name: 'Tejas' },
+    'dhananjay@worker.com': { password: 'worker123', role: 'worker', name: 'Dhananjay' }
   };
 
-  const handleWorkerAccess = () => {
-    toast({
-      title: "Worker Access", 
-      description: "Accessing dashboard as Worker",
-    });
-    localStorage.setItem('demo_access', 'true');
-    localStorage.setItem('demo_role', 'worker');
-    localStorage.setItem('demo_name', 'Jane Worker');
-    localStorage.setItem('demo_department', 'Electronics');
-    navigate('/');
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      const user = users[email as keyof typeof users];
+      
+      if (!user || user.password !== password) {
+        throw new Error('Invalid email or password');
+      }
+
+      // Set login data in localStorage
+      localStorage.setItem('demo_access', 'true');
+      localStorage.setItem('demo_role', user.role);
+      localStorage.setItem('demo_name', user.name);
+      localStorage.setItem('demo_email', email);
+      localStorage.setItem('demo_department', user.role === 'worker' ? 'Electronics' : '');
+
+      toast({
+        title: "Login Successful",
+        description: `Welcome ${user.name}! Logged in as ${user.role}`,
+      });
+
+      navigate('/');
+    } catch (error: any) {
+      toast({
+        title: "Login Failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleDirectAccess = () => {
-    toast({
-      title: "Accessing Dashboard",
-      description: "Entering demo mode",
-    });
+  const handleQuickLogin = (userEmail: string) => {
+    const user = users[userEmail as keyof typeof users];
+    setEmail(userEmail);
+    setPassword(user.password);
+    
+    // Auto login
     localStorage.setItem('demo_access', 'true');
-    localStorage.setItem('demo_role', 'manager');
-    localStorage.setItem('demo_name', 'Demo User');
-    localStorage.setItem('demo_department', '');
+    localStorage.setItem('demo_role', user.role);
+    localStorage.setItem('demo_name', user.name);
+    localStorage.setItem('demo_email', userEmail);
+    localStorage.setItem('demo_department', user.role === 'worker' ? 'Electronics' : '');
+
+    toast({
+      title: "Quick Login",
+      description: `Logged in as ${user.name} (${user.role})`,
+    });
+
     navigate('/');
   };
 
@@ -57,49 +87,76 @@ const Auth = () => {
         <Card className="shadow-lg">
           <CardHeader className="space-y-1">
             <CardTitle className="text-2xl font-bold text-center text-[#004c91]">
-              Welcome to Demo
+              Login
             </CardTitle>
             <CardDescription className="text-center">
-              Choose your role to explore the dashboard
+              Enter your credentials to access the dashboard
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              <Button
-                onClick={handleManagerAccess}
-                className="w-full bg-[#0071ce] hover:bg-[#004c91] h-12"
+            <form onSubmit={handleLogin} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="Enter your email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="password">Password</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  placeholder="Enter your password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
+              </div>
+              <Button 
+                type="submit" 
+                className="w-full bg-[#0071ce] hover:bg-[#004c91]" 
+                disabled={loading}
               >
-                Enter as Manager
-                <span className="block text-xs opacity-80">Full access to all features</span>
+                {loading ? 'Logging In...' : 'Login'}
               </Button>
-              
-              <Button
-                onClick={handleWorkerAccess}
-                variant="outline"
-                className="w-full h-12"
-              >
-                Enter as Worker
-                <span className="block text-xs opacity-60">Limited access - Analytics only</span>
-              </Button>
-              
-              <Button
-                onClick={handleDirectAccess}
-                variant="secondary"
-                className="w-full"
-              >
-                Quick Demo Access
-              </Button>
+            </form>
+
+            {/* Quick Login Buttons */}
+            <div className="pt-4 border-t mt-4">
+              <p className="text-sm text-gray-600 mb-3 text-center">Quick Login:</p>
+              <div className="space-y-2">
+                <Button
+                  onClick={() => handleQuickLogin('tejas@manager.com')}
+                  variant="outline"
+                  className="w-full text-sm"
+                  disabled={loading}
+                >
+                  Login as Manager Tejas
+                </Button>
+                <Button
+                  onClick={() => handleQuickLogin('dhananjay@worker.com')}
+                  variant="outline"
+                  className="w-full text-sm"
+                  disabled={loading}
+                >
+                  Login as Worker Dhananjay
+                </Button>
+              </div>
             </div>
           </CardContent>
         </Card>
 
-        {/* Info */}
+        {/* Demo Credentials */}
         <div className="mt-6 p-4 bg-white/80 rounded-lg text-sm text-gray-600">
-          <h3 className="font-semibold mb-2">Demo Features:</h3>
+          <h3 className="font-semibold mb-2">Demo Credentials:</h3>
           <ul className="space-y-1">
-            <li>• <strong>Manager:</strong> Store management, products, cameras, full analytics</li>
-            <li>• <strong>Worker:</strong> Store map, zone analytics, sales data</li>
-            <li>• Interactive heat maps and real-time data visualization</li>
+            <li>• <strong>Manager:</strong> tejas@manager.com / manager123</li>
+            <li>• <strong>Worker:</strong> dhananjay@worker.com / worker123</li>
           </ul>
         </div>
       </div>

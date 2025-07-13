@@ -10,6 +10,7 @@ import ZoneAnalytics from '@/components/ZoneAnalytics';
 import CameraMapping from '@/components/CameraMapping';
 import SalesAnalytics from '@/components/SalesAnalytics';
 import SeasonalTrends from '@/components/SeasonalTrends';
+import CSVDownload from '@/components/CSVDownload';
 import { BarChart3, Store, Package, Camera, TrendingUp, Calendar, MapPin, Activity } from 'lucide-react';
 
 const Dashboard = () => {
@@ -19,6 +20,44 @@ const Dashboard = () => {
 
   const handleSectionSelect = (sectionId: string | null) => {
     setSelectedSection(sectionId);
+  };
+
+  // Sample data for CSV downloads
+  const getCSVData = (tabName: string) => {
+    switch (tabName) {
+      case 'overview':
+        return [
+          { metric: 'Total Sales', value: '$45,231.89', change: '+20.1%' },
+          { metric: 'Available Sections', value: '12', change: '8 high-traffic' },
+          { metric: 'Products', value: '573', change: '12 low stock' },
+          { metric: 'Cameras', value: '24', change: 'All operational' }
+        ];
+      case 'stores':
+        return [
+          { store: 'Main Store', location: 'Downtown', sales: '$25,000', status: 'Active' },
+          { store: 'Branch Store', location: 'Mall', sales: '$20,231', status: 'Active' }
+        ];
+      case 'products':
+        return [
+          { name: 'Kitchen Appliances', category: 'Kitchen', stock: 45, sales: '$5,200' },
+          { name: 'Bedding Sets', category: 'Bedding', stock: 32, sales: '$3,800' },
+          { name: 'Towels', category: 'Bath', stock: 78, sales: '$2,100' }
+        ];
+      case 'zones':
+        return [
+          { zone: 'Kitchen', traffic: 85, sales: '$8,500', performance: 'High' },
+          { zone: 'Bedding', traffic: 72, sales: '$6,200', performance: 'Medium' },
+          { zone: 'Bath', traffic: 58, sales: '$4,100', performance: 'Low' }
+        ];
+      case 'sales':
+        return [
+          { date: '2024-01-01', sales: '$1,200', transactions: 45, avg_order: '$26.67' },
+          { date: '2024-01-02', sales: '$1,450', transactions: 52, avg_order: '$27.88' },
+          { date: '2024-01-03', sales: '$1,100', transactions: 38, avg_order: '$28.95' }
+        ];
+      default:
+        return [{ message: 'No data available for this section' }];
+    }
   };
 
   const managerTabs = [
@@ -43,14 +82,26 @@ const Dashboard = () => {
 
   return (
     <div className="container mx-auto p-6">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-800 mb-2">
-          {isManager ? 'Manager Dashboard' : 'Worker Dashboard'}
-        </h1>
-        <p className="text-gray-600">
-          Welcome back, {profile?.full_name || 'User'}! 
-          {profile?.department && ` • ${profile.department}`}
-        </p>
+      <div className="mb-8 flex justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-800 mb-2">
+            {isManager ? 'Manager Dashboard' : 'Worker Dashboard'}
+          </h1>
+          <p className="text-gray-600">
+            Welcome back, {profile?.full_name || 'User'}! 
+            {profile?.department && ` • ${profile.department}`}
+          </p>
+        </div>
+        
+        {/* CSV Download for Managers */}
+        {isManager && (
+          <CSVDownload
+            data={getCSVData(activeTab)}
+            filename={`${activeTab}-data-${new Date().toISOString().split('T')[0]}`}
+            buttonText={`Export ${activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} Data`}
+            className="bg-[#0071ce] text-white hover:bg-[#004c91]"
+          />
+        )}
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
@@ -71,6 +122,16 @@ const Dashboard = () => {
         </TabsList>
 
         <TabsContent value="overview" className="space-y-6">
+          {isManager && (
+            <div className="flex justify-end mb-4">
+              <CSVDownload
+                data={getCSVData('overview')}
+                filename={`overview-metrics-${new Date().toISOString().split('T')[0]}`}
+                buttonText="Download Overview Data"
+              />
+            </div>
+          )}
+          
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -152,32 +213,95 @@ const Dashboard = () => {
         {isManager && (
           <>
             <TabsContent value="stores">
+              {isManager && (
+                <div className="flex justify-end mb-4">
+                  <CSVDownload
+                    data={getCSVData('stores')}
+                    filename={`stores-data-${new Date().toISOString().split('T')[0]}`}
+                    buttonText="Download Stores Data"
+                  />
+                </div>
+              )}
               <StoreManagement />
             </TabsContent>
             
             <TabsContent value="products">
+              {isManager && (
+                <div className="flex justify-end mb-4">
+                  <CSVDownload
+                    data={getCSVData('products')}
+                    filename={`products-data-${new Date().toISOString().split('T')[0]}`}
+                    buttonText="Download Products Data"
+                  />
+                </div>
+              )}
               <ProductManagement />
             </TabsContent>
             
             <TabsContent value="cameras">
+              {isManager && (
+                <div className="flex justify-end mb-4">
+                  <CSVDownload
+                    data={getCSVData('cameras')}
+                    filename={`cameras-data-${new Date().toISOString().split('T')[0]}`}
+                    buttonText="Download Cameras Data"
+                  />
+                </div>
+              )}
               <CameraMapping />
             </TabsContent>
             
             <TabsContent value="trends">
+              {isManager && (
+                <div className="flex justify-end mb-4">
+                  <CSVDownload
+                    data={getCSVData('trends')}
+                    filename={`trends-data-${new Date().toISOString().split('T')[0]}`}
+                    buttonText="Download Trends Data"
+                  />
+                </div>
+              )}
               <SeasonalTrends />
             </TabsContent>
           </>
         )}
 
         <TabsContent value="layout">
+          {isManager && (
+            <div className="flex justify-end mb-4">
+              <CSVDownload
+                data={getCSVData('layout')}
+                filename={`layout-data-${new Date().toISOString().split('T')[0]}`}
+                buttonText="Download Layout Data"
+              />
+            </div>
+          )}
           <StoreLayout onSectionSelect={handleSectionSelect} selectedSection={selectedSection} />
         </TabsContent>
         
         <TabsContent value="zones">
+          {isManager && (
+            <div className="flex justify-end mb-4">
+              <CSVDownload
+                data={getCSVData('zones')}
+                filename={`zones-analytics-${new Date().toISOString().split('T')[0]}`}
+                buttonText="Download Zone Analytics"
+              />
+            </div>
+          )}
           <ZoneAnalytics selectedZone={selectedSection} />
         </TabsContent>
         
         <TabsContent value="sales">
+          {isManager && (
+            <div className="flex justify-end mb-4">
+              <CSVDownload
+                data={getCSVData('sales')}
+                filename={`sales-analytics-${new Date().toISOString().split('T')[0]}`}
+                buttonText="Download Sales Data"
+              />
+            </div>
+          )}
           <SalesAnalytics />
         </TabsContent>
       </Tabs>

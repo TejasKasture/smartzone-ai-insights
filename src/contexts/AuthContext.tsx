@@ -61,16 +61,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const createDemoProfile = (): DemoProfile => {
-    const demoRole = localStorage.getItem('demo_role') as 'manager' | 'worker' || 'manager';
+    const demoRole = localStorage.getItem('demo_role') as 'manager' | 'worker' || 'worker';
     const demoName = localStorage.getItem('demo_name') || 'Demo User';
     const demoDepartment = localStorage.getItem('demo_department') || null;
+    const demoEmail = localStorage.getItem('demo_email') || 'demo@smartzone.ai';
+    
+    console.log('Creating demo profile with role:', demoRole, 'name:', demoName);
     
     return {
       id: 'demo-user',
       full_name: demoName,
       role: demoRole,
       department: demoDepartment,
-      email: 'demo@smartzone.ai'
+      email: demoEmail
     };
   };
 
@@ -79,7 +82,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const demoAccess = localStorage.getItem('demo_access') === 'true';
     
     if (demoAccess) {
-      setProfile(createDemoProfile());
+      const demoProfile = createDemoProfile();
+      console.log('Setting demo profile:', demoProfile);
+      setProfile(demoProfile);
       setLoading(false);
       return;
     }
@@ -128,6 +133,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       localStorage.removeItem('demo_role');
       localStorage.removeItem('demo_name');
       localStorage.removeItem('demo_department');
+      localStorage.removeItem('demo_email');
       
       // Sign out from Supabase if logged in
       if (user) {
@@ -143,6 +149,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const isManager = profile?.role === 'manager';
+  console.log('AuthContext - Profile:', profile, 'isManager:', isManager);
 
   const value = {
     user,
