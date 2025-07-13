@@ -1,7 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -20,6 +19,37 @@ interface Store {
   updated_at: string;
 }
 
+// Sample data for stores
+const SAMPLE_STORES: Store[] = [
+  {
+    id: '1',
+    name: 'Downtown Walmart',
+    location: 'City Center',
+    address: '123 Main Street, Downtown',
+    manager_id: 'manager1',
+    created_at: '2024-01-15T10:00:00Z',
+    updated_at: '2024-01-15T10:00:00Z'
+  },
+  {
+    id: '2',
+    name: 'Mall Branch',
+    location: 'Shopping Mall',
+    address: '456 Mall Avenue, Shopping District',
+    manager_id: 'manager2',
+    created_at: '2024-01-20T14:30:00Z',
+    updated_at: '2024-01-20T14:30:00Z'
+  },
+  {
+    id: '3',
+    name: 'Suburb Store',
+    location: 'Residential Area',
+    address: '789 Oak Street, Suburbia',
+    manager_id: 'manager3',
+    created_at: '2024-02-01T09:15:00Z',
+    updated_at: '2024-02-01T09:15:00Z'
+  }
+];
+
 const StoreManagement = () => {
   const { isManager } = useAuth();
   const [stores, setStores] = useState<Store[]>([]);
@@ -34,28 +64,30 @@ const StoreManagement = () => {
   const { toast } = useToast();
 
   useEffect(() => {
-    fetchStores();
+    loadStores();
   }, []);
 
-  const fetchStores = async () => {
+  const loadStores = () => {
     try {
-      const { data, error } = await supabase
-        .from('stores')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      setStores(data || []);
-    } catch (error: any) {
-      console.error('Error fetching stores:', error);
-      toast({
-        title: "Error loading stores",
-        description: error.message,
-        variant: "destructive",
-      });
+      const savedStores = localStorage.getItem('stores');
+      if (savedStores) {
+        setStores(JSON.parse(savedStores));
+      } else {
+        // Load sample data if no saved data exists
+        setStores(SAMPLE_STORES);
+        localStorage.setItem('stores', JSON.stringify(SAMPLE_STORES));
+      }
+    } catch (error) {
+      console.error('Error loading stores:', error);
+      setStores(SAMPLE_STORES);
     } finally {
       setLoading(false);
     }
+  };
+
+  const saveStores = (updatedStores: Store[]) => {
+    localStorage.setItem('stores', JSON.stringify(updatedStores));
+    setStores(updatedStores);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -63,32 +95,36 @@ const StoreManagement = () => {
     
     try {
       if (editingStore) {
-        const { error } = await supabase
-          .from('stores')
-          .update({
-            name: formData.name,
-            location: formData.location,
-            address: formData.address || null,
-            updated_at: new Date().toISOString()
-          })
-          .eq('id', editingStore.id);
-
-        if (error) throw error;
+        const updatedStores = stores.map(store => 
+          store.id === editingStore.id 
+            ? {
+                ...store,
+                name: formData.name,
+                location: formData.location,
+                address: formData.address || null,
+                updated_at: new Date().toISOString()
+              }
+            : store
+        );
+        saveStores(updatedStores);
         
         toast({
           title: "Store updated successfully",
           description: `${formData.name} has been updated.`,
         });
       } else {
-        const { error } = await supabase
-          .from('stores')
-          .insert({
-            name: formData.name,
-            location: formData.location,
-            address: formData.address || null
-          });
-
-        if (error) throw error;
+        const newStore: Store = {
+          id: Date.now().toString(),
+          name: formData.name,
+          location: formData.location,
+          address: formData.address || null,
+          manager_id: null,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        };
+        
+        const updatedStores = [...stores, newStore];
+        saveStores(updatedStores);
         
         toast({
           title: "Store created successfully",
@@ -99,12 +135,11 @@ const StoreManagement = () => {
       setDialogOpen(false);
       setEditingStore(null);
       setFormData({ name: '', location: '', address: '' });
-      fetchStores();
     } catch (error: any) {
       console.error('Error saving store:', error);
       toast({
         title: "Error saving store",
-        description: error.message,
+        description: "Please try again.",
         variant: "destructive",
       });
     }
@@ -124,24 +159,18 @@ const StoreManagement = () => {
     if (!confirm(`Are you sure you want to delete ${store.name}?`)) return;
 
     try {
-      const { error } = await supabase
-        .from('stores')
-        .delete()
-        .eq('id', store.id);
-
-      if (error) throw error;
+      const updatedStores = stores.filter(s => s.id !== store.id);
+      saveStores(updatedStores);
       
       toast({
         title: "Store deleted",
         description: `${store.name} has been removed.`,
       });
-      
-      fetchStores();
     } catch (error: any) {
       console.error('Error deleting store:', error);
       toast({
         title: "Error deleting store",
-        description: error.message,
+        description: "Please try again.",
         variant: "destructive",
       });
     }

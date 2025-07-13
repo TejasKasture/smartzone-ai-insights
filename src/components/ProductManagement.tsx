@@ -1,7 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -31,6 +30,90 @@ interface Category {
   name: string;
 }
 
+// Sample categories
+const SAMPLE_CATEGORIES: Category[] = [
+  { id: '1', name: 'Kitchen' },
+  { id: '2', name: 'Bedding' },
+  { id: '3', name: 'Bath' },
+  { id: '4', name: 'Appliances' },
+  { id: '5', name: 'Towels' },
+  { id: '6', name: 'Blankets' }
+];
+
+// Sample products
+const SAMPLE_PRODUCTS: Product[] = [
+  {
+    id: '1',
+    name: 'Kitchen Knife Set',
+    sku: 'KIT-001',
+    price: 49.99,
+    cost: 25.00,
+    stock_quantity: 45,
+    min_stock_level: 10,
+    description: 'Professional kitchen knife set with 6 pieces',
+    image_url: null,
+    category_id: '1',
+    created_at: '2024-01-15T10:00:00Z',
+    updated_at: '2024-01-15T10:00:00Z'
+  },
+  {
+    id: '2',
+    name: 'Queen Size Bedsheet Set',
+    sku: 'BED-002',
+    price: 79.99,
+    cost: 40.00,
+    stock_quantity: 32,
+    min_stock_level: 5,
+    description: 'Luxury cotton bedsheet set with pillowcases',
+    image_url: null,
+    category_id: '2',
+    created_at: '2024-01-20T14:30:00Z',
+    updated_at: '2024-01-20T14:30:00Z'
+  },
+  {
+    id: '3',
+    name: 'Bath Towel Set',
+    sku: 'TWL-003',
+    price: 34.99,
+    cost: 18.00,
+    stock_quantity: 78,
+    min_stock_level: 15,
+    description: 'Soft cotton bath towel set - 4 pieces',
+    image_url: null,
+    category_id: '5',
+    created_at: '2024-02-01T09:15:00Z',
+    updated_at: '2024-02-01T09:15:00Z'
+  },
+  {
+    id: '4',
+    name: 'Coffee Maker',
+    sku: 'APP-004',
+    price: 129.99,
+    cost: 75.00,
+    stock_quantity: 12,
+    min_stock_level: 3,
+    description: '12-cup programmable coffee maker',
+    image_url: null,
+    category_id: '4',
+    created_at: '2024-02-05T11:20:00Z',
+    updated_at: '2024-02-05T11:20:00Z'
+  },
+  {
+    id: '5',
+    name: 'Fleece Blanket',
+    sku: 'BLN-005',
+    price: 24.99,
+    cost: 12.00,
+    stock_quantity: 56,
+    min_stock_level: 8,
+    description: 'Soft fleece blanket - multiple colors',
+    image_url: null,
+    category_id: '6',
+    created_at: '2024-02-10T16:45:00Z',
+    updated_at: '2024-02-10T16:45:00Z'
+  }
+];
+
 const ProductManagement = () => {
   const { isManager } = useAuth();
   const [products, setProducts] = useState<Product[]>([]);
@@ -51,79 +134,92 @@ const ProductManagement = () => {
   const { toast } = useToast();
 
   useEffect(() => {
-    fetchProducts();
-    fetchCategories();
+    loadProducts();
+    loadCategories();
   }, []);
 
-  const fetchProducts = async () => {
+  const loadProducts = () => {
     try {
-      const { data, error } = await supabase
-        .from('products')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      setProducts(data || []);
-    } catch (error: any) {
-      console.error('Error fetching products:', error);
-      toast({
-        title: "Error loading products",
-        description: error.message,
-        variant: "destructive",
-      });
+      const savedProducts = localStorage.getItem('products');
+      if (savedProducts) {
+        setProducts(JSON.parse(savedProducts));
+      } else {
+        setProducts(SAMPLE_PRODUCTS);
+        localStorage.setItem('products', JSON.stringify(SAMPLE_PRODUCTS));
+      }
+    } catch (error) {
+      console.error('Error loading products:', error);
+      setProducts(SAMPLE_PRODUCTS);
     } finally {
       setLoading(false);
     }
   };
 
-  const fetchCategories = async () => {
+  const loadCategories = () => {
     try {
-      const { data, error } = await supabase
-        .from('categories')
-        .select('id, name')
-        .order('name');
-
-      if (error) throw error;
-      setCategories(data || []);
-    } catch (error: any) {
-      console.error('Error fetching categories:', error);
+      const savedCategories = localStorage.getItem('categories');
+      if (savedCategories) {
+        setCategories(JSON.parse(savedCategories));
+      } else {
+        setCategories(SAMPLE_CATEGORIES);
+        localStorage.setItem('categories', JSON.stringify(SAMPLE_CATEGORIES));
+      }
+    } catch (error) {
+      console.error('Error loading categories:', error);
+      setCategories(SAMPLE_CATEGORIES);
     }
+  };
+
+  const saveProducts = (updatedProducts: Product[]) => {
+    localStorage.setItem('products', JSON.stringify(updatedProducts));
+    setProducts(updatedProducts);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     try {
-      const productData = {
-        name: formData.name,
-        sku: formData.sku,
-        price: parseFloat(formData.price),
-        cost: formData.cost ? parseFloat(formData.cost) : null,
-        stock_quantity: formData.stock_quantity ? parseInt(formData.stock_quantity) : null,
-        min_stock_level: formData.min_stock_level ? parseInt(formData.min_stock_level) : null,
-        description: formData.description || null,
-        category_id: formData.category_id || null,
-        updated_at: new Date().toISOString()
-      };
-
       if (editingProduct) {
-        const { error } = await supabase
-          .from('products')
-          .update(productData)
-          .eq('id', editingProduct.id);
-
-        if (error) throw error;
+        const updatedProducts = products.map(product =>
+          product.id === editingProduct.id
+            ? {
+                ...product,
+                name: formData.name,
+                sku: formData.sku,
+                price: parseFloat(formData.price),
+                cost: formData.cost ? parseFloat(formData.cost) : null,
+                stock_quantity: formData.stock_quantity ? parseInt(formData.stock_quantity) : null,
+                min_stock_level: formData.min_stock_level ? parseInt(formData.min_stock_level) : null,
+                description: formData.description || null,
+                category_id: formData.category_id || null,
+                updated_at: new Date().toISOString()
+              }
+            : product
+        );
+        saveProducts(updatedProducts);
         
         toast({
           title: "Product updated successfully",
           description: `${formData.name} has been updated.`,
         });
       } else {
-        const { error } = await supabase
-          .from('products')
-          .insert(productData);
-
-        if (error) throw error;
+        const newProduct: Product = {
+          id: Date.now().toString(),
+          name: formData.name,
+          sku: formData.sku,
+          price: parseFloat(formData.price),
+          cost: formData.cost ? parseFloat(formData.cost) : null,
+          stock_quantity: formData.stock_quantity ? parseInt(formData.stock_quantity) : null,
+          min_stock_level: formData.min_stock_level ? parseInt(formData.min_stock_level) : null,
+          description: formData.description || null,
+          image_url: null,
+          category_id: formData.category_id || null,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        };
+        
+        const updatedProducts = [...products, newProduct];
+        saveProducts(updatedProducts);
         
         toast({
           title: "Product created successfully",
@@ -137,12 +233,11 @@ const ProductManagement = () => {
         name: '', sku: '', price: '', cost: '', stock_quantity: '',
         min_stock_level: '', description: '', category_id: ''
       });
-      fetchProducts();
     } catch (error: any) {
       console.error('Error saving product:', error);
       toast({
         title: "Error saving product",
-        description: error.message,
+        description: "Please try again.",
         variant: "destructive",
       });
     }
@@ -167,24 +262,18 @@ const ProductManagement = () => {
     if (!confirm(`Are you sure you want to delete ${product.name}?`)) return;
 
     try {
-      const { error } = await supabase
-        .from('products')
-        .delete()
-        .eq('id', product.id);
-
-      if (error) throw error;
+      const updatedProducts = products.filter(p => p.id !== product.id);
+      saveProducts(updatedProducts);
       
       toast({
         title: "Product deleted",
         description: `${product.name} has been removed.`,
       });
-      
-      fetchProducts();
     } catch (error: any) {
       console.error('Error deleting product:', error);
       toast({
         title: "Error deleting product",
-        description: error.message,
+        description: "Please try again.",
         variant: "destructive",
       });
     }
@@ -287,6 +376,15 @@ const ProductManagement = () => {
                     type="number"
                     value={formData.stock_quantity}
                     onChange={(e) => setFormData({ ...formData, stock_quantity: e.target.value })}
+                    placeholder="Optional"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="description">Description</Label>
+                  <Input
+                    id="description"
+                    value={formData.description}
+                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                     placeholder="Optional"
                   />
                 </div>
