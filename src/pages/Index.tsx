@@ -5,12 +5,15 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import Dashboard from './Dashboard';
 import { LogOut, User } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 const Index = () => {
   const { profile, signOut, isManager } = useAuth();
+  const navigate = useNavigate();
 
   const handleSignOut = async () => {
     await signOut();
+    navigate('/auth');
   };
 
   const getInitials = (name: string) => {
@@ -52,7 +55,7 @@ const Index = () => {
               className="bg-transparent border-white text-white hover:bg-white hover:text-[#004c91]"
             >
               <LogOut className="w-4 h-4 mr-2" />
-              Sign Out
+              Exit Demo
             </Button>
           </div>
         </div>

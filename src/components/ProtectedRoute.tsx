@@ -12,10 +12,11 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, managerOnly =
   const { user, profile, loading } = useAuth();
   const location = useLocation();
 
-  // Check if we're coming from a direct access bypass
-  const isDirectAccess = location.state?.directAccess;
+  // Check for demo access
+  const demoAccess = localStorage.getItem('demo_access') === 'true';
+  const demoRole = localStorage.getItem('demo_role');
 
-  if (loading) {
+  if (loading && !demoAccess) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center">
         <div className="text-center">
@@ -26,21 +27,24 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, managerOnly =
     );
   }
 
-  // Allow direct access for demo purposes
-  if (!user && !isDirectAccess) {
+  // Redirect to auth if no user and no demo access
+  if (!user && !demoAccess) {
     return <Navigate to="/auth" replace />;
   }
 
-  // If we have a user but it's manager-only and they're not a manager
-  if (user && managerOnly && profile?.role !== 'manager') {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center">
-        <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-800 mb-4">Access Denied</h2>
-          <p className="text-gray-600">You need manager privileges to access this page.</p>
+  // Check manager-only access
+  if (managerOnly) {
+    const isManager = user ? profile?.role === 'manager' : demoRole === 'manager';
+    if (!isManager) {
+      return (
+        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center">
+          <div className="text-center">
+            <h2 className="text-2xl font-bold text-gray-800 mb-4">Access Denied</h2>
+            <p className="text-gray-600">You need manager privileges to access this page.</p>
+          </div>
         </div>
-      </div>
-    );
+      );
+    }
   }
 
   return <>{children}</>;

@@ -6,10 +6,18 @@ import { Database } from '@/integrations/supabase/types';
 
 type Profile = Database['public']['Tables']['profiles']['Row'];
 
+interface DemoProfile {
+  id: string;
+  full_name: string;
+  role: 'manager' | 'worker';
+  department: string | null;
+  email: string;
+}
+
 interface AuthContextType {
   user: User | null;
   session: Session | null;
-  profile: Profile | null;
+  profile: Profile | DemoProfile | null;
   loading: boolean;
   signOut: () => Promise<void>;
   isManager: boolean;
@@ -28,7 +36,7 @@ export const useAuth = () => {
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
-  const [profile, setProfile] = useState<Profile | null>(null);
+  const [profile, setProfile] = useState<Profile | DemoProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
   const fetchProfile = async (userId: string) => {
@@ -52,8 +60,31 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const createDemoProfile = (): DemoProfile => {
+    const demoRole = localStorage.getItem('demo_role') as 'manager' | 'worker' || 'manager';
+    const demoName = localStorage.getItem('demo_name') || 'Demo User';
+    const demoDepartment = localStorage.getItem('demo_department') || null;
+    
+    return {
+      id: 'demo-user',
+      full_name: demoName,
+      role: demoRole,
+      department: demoDepartment,
+      email: 'demo@smartzone.ai'
+    };
+  };
+
   useEffect(() => {
-    // Set up auth state listener FIRST
+    // Check for demo access first
+    const demoAccess = localStorage.getItem('demo_access') === 'true';
+    
+    if (demoAccess) {
+      setProfile(createDemoProfile());
+      setLoading(false);
+      return;
+    }
+
+    // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         console.log('Auth state changed:', event, session);
@@ -72,7 +103,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     );
 
-    // THEN check for existing session
+    // Check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
       console.log('Initial session check:', session);
       setSession(session);
@@ -92,7 +123,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signOut = async () => {
     try {
-      await supabase.auth.signOut();
+      // Clear demo access
+      localStorage.removeItem('demo_access');
+      localStorage.removeItem('demo_role');
+      localStorage.removeItem('demo_name');
+      localStorage.removeItem('demo_department');
+      
+      // Sign out from Supabase if logged in
+      if (user) {
+        await supabase.auth.signOut();
+      }
+      
       setUser(null);
       setSession(null);
       setProfile(null);
