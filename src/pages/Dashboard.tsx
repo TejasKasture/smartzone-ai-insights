@@ -11,7 +11,8 @@ import CameraMapping from '@/components/CameraMapping';
 import SalesAnalytics from '@/components/SalesAnalytics';
 import SeasonalTrends from '@/components/SeasonalTrends';
 import CSVDownload from '@/components/CSVDownload';
-import { BarChart3, Store, Package, Camera, TrendingUp, Calendar, MapPin, Activity } from 'lucide-react';
+import { Summary } from '@/components/Summary';
+import { BarChart3, Store, Package, Camera, TrendingUp, Calendar, MapPin, Activity, FileText } from 'lucide-react';
 
 const Dashboard = () => {
   const { profile, isManager } = useAuth();
@@ -55,6 +56,13 @@ const Dashboard = () => {
           { date: '2024-01-02', sales: '$1,450', transactions: 52, avg_order: '$27.88' },
           { date: '2024-01-03', sales: '$1,100', transactions: 38, avg_order: '$28.95' }
         ];
+      case 'summary':
+        return [
+          { type: 'Discount Offers', sku: 'D302', value: '20%', duration: '30 days', reason: 'slow moving inventory' },
+          { type: 'Bundle Deals', name: 'Hair Care Essentials', products: 'B101, B102, B103', discount: '20%' },
+          { type: 'Product Badges', sku: 'C201', badge: 'Hot Pick', reason: 'high demand item' },
+          { type: 'Warning', message: 'Zone E is cold and underperforming' }
+        ];
       default:
         return [{ message: 'No data available for this section' }];
     }
@@ -62,6 +70,7 @@ const Dashboard = () => {
 
   const managerTabs = [
     { id: 'overview', label: 'Overview', icon: BarChart3 },
+    { id: 'summary', label: 'Summary', icon: FileText },
     { id: 'stores', label: 'Stores', icon: Store },
     { id: 'products', label: 'Products', icon: Package },
     { id: 'layout', label: 'Store Layout', icon: MapPin },
@@ -73,7 +82,7 @@ const Dashboard = () => {
 
   const workerTabs = [
     { id: 'overview', label: 'Overview', icon: BarChart3 },
-    { id: 'layout', label: 'Store Layout', icon: MapPin },
+    { id: 'summary', label: 'Summary', icon: FileText },
     { id: 'zones', label: 'Section Analytics', icon: Activity },
     { id: 'sales', label: 'Sales Analytics', icon: TrendingUp },
   ];
@@ -208,6 +217,19 @@ const Dashboard = () => {
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="summary">
+          {isManager && (
+            <div className="flex justify-end mb-4">
+              <CSVDownload
+                data={getCSVData('summary')}
+                filename={`summary-data-${new Date().toISOString().split('T')[0]}`}
+                buttonText="Download Summary Data"
+              />
+            </div>
+          )}
+          <Summary userRole={isManager ? 'manager' : 'worker'} />
         </TabsContent>
 
         {isManager && (
