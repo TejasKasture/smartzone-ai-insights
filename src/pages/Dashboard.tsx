@@ -81,10 +81,8 @@ const Dashboard = () => {
   ];
 
   const workerTabs = [
-    { id: 'overview', label: 'Overview', icon: BarChart3 },
     { id: 'summary', label: 'Summary', icon: FileText },
-    { id: 'zones', label: 'Section Analytics', icon: Activity },
-    { id: 'sales', label: 'Sales Analytics', icon: TrendingUp },
+    { id: 'layout', label: 'Store Layout', icon: MapPin },
   ];
 
   const tabs = isManager ? managerTabs : workerTabs;
